@@ -1,0 +1,11 @@
+table.index_user>thead>tr>th {
+    text-align: center;
+    vertical-align: middle;
+    background-color: #4CAF50;
+    color: white;
+}
+
+table.index_user>tbody>tr>td {
+    text-align: center;
+    vertical-align: middle;
+}
