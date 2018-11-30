@@ -33,7 +33,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/login';
+    // protected $redirectTo = '/login';
     protected $activationService;
     /**
      * Create a new controller instance.
@@ -97,5 +97,15 @@ class RegisterController extends Controller
             return redirect('/login');
         }
         abort(404);
+    }
+    public function redirectTo()
+    {
+        if (auth()->user()->is_admin) {
+            return '/user';
+        } else if (auth()->user()->is_authenticated) {
+            return '/news';
+        } else {
+            return '/home';
+        }
     }
 }

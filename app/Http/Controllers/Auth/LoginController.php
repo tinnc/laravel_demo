@@ -25,7 +25,7 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/';
+    // protected $redirectTo = '/';
     protected $activationService;
 
     /**
@@ -60,5 +60,15 @@ class LoginController extends Controller
             return back()->with('warning', 'Bạn cần xác thực tài khoản, chúng tôi đã gửi mã xác thực vào email của bạn, hãy kiểm tra và làm theo hướng dẫn.');
         }
         return redirect()->intended($this->redirectPath());
+    }
+    public function redirectTo()
+    {
+        if (auth()->user()->role_id == 0) {
+            return '/user';
+        } else if (auth()->user()->role_id == 1) {
+            return '/news';
+        } else {
+            return '/home';
+        }
     }
 }
