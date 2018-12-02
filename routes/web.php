@@ -50,12 +50,11 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('product/store', 'ProductController@store')->name('product.store');
     Route::delete('product/{id}/destroy', 'ProductController@destroy')->name('product.destroy');
 
-    Route::resource('/news', 'NewsController');
+    Route::resource('news', 'NewsController');
+
 
     Route::get('user/{user}/ajax-edit', 'UserController@ajaxEdit')->name('user.ajax-edit');
     Route::put('user/{user}/ajax-update', 'UserController@ajaxUpdate')->name('user.ajax-update');
     Route::resource('/user', 'UserController');
-
-    
 
 });
