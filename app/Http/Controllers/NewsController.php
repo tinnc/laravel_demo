@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\News;
+use Illuminate\Support\Facades\Gate;
+use Helper;
 
 class NewsController extends HelperController
 {
@@ -25,8 +27,10 @@ class NewsController extends HelperController
      */
     public function create()
     {
+        $article = new News;
+
         return view('admin.news.create', [
-            'article' => new News,
+            'article' => $article,
             'category_id' => self::show_type_news()
         ]);
     }
@@ -55,7 +59,7 @@ class NewsController extends HelperController
                 $article->summary = $request->get('summary');
                 $article->created_at = date('Y-m-d');
                 $article->status = 1;
-                $article->user_id = 0;
+                $article->user_id = \Auth::user()->id;
                 $article->views = 0;
                 $article->save();
             } else {
@@ -77,7 +81,12 @@ class NewsController extends HelperController
     public function show($id)
     {
         $article = News::findOrFail($id);
-        return view('admin.news.show', compact('article'));
+        if (Gate::allows('show', $article)) {
+            return view('admin.news.show', compact('article'));
+        } else {
+            echo 'error';
+            return;
+        }
     }
 
     /**
@@ -89,11 +98,15 @@ class NewsController extends HelperController
     public function edit($id)
     {
         $article = News::findOrFail($id);
-
-        return view('admin.news.edit', [
-            'article' => $article,
-            'category_id' => self::show_type_news()
-        ]);
+        if (Gate::allows('edit', $article)) {
+            return view('admin.news.edit', [
+                'article' => $article,
+                'category_id' => self::show_type_news()
+            ]);
+        } else {
+            echo 'error';
+            return;
+        }
     }
 
     /**
@@ -106,36 +119,37 @@ class NewsController extends HelperController
     public function update(Request $request, $id)
     {
         $article = News::findOrFail($id);
-
-        if ($request->hasFile('image_news')) {
-
-            if ($request->file('image_news')->isValid()) {
-                \File::delete("images/bai_viet/$article->image");
-                $file = $request->file('image_news');
-                $extension = $file->getClientOriginalExtension(); // getting image extension
-                $filename =time().'.'.$extension;
-                $file->move('images/bai_viet/', $filename);
+        if (Gate::allows('update', $article)) {
+            if ($request->hasFile('image_news')) {
+                if ($request->file('image_news')->isValid()) {
+                    \File::delete("images/bai_viet/$article->image");
+                    $file = $request->file('image_news');
+                    $extension = $file->getClientOriginalExtension(); // getting image extension
+                    $filename =time().'.'.$extension;
+                    $file->move('images/bai_viet/', $filename);
+                } else {
+                    echo 'File is invalid';
+                }
             } else {
-                echo 'File is invalid';
+                $filename = $article->image;
             }
+            if (isset($article) && isset($filename)) {
+                $article->title = $request->get('title');
+                $article->category_id = $request->get('category_id');
+                $article->image = $filename;
+                $article->detail = $request->get('detail');
+                $article->summary = $request->get('summary');
+                $article->updated_at = date('Y-m-d');
+                $article->status = 1;
+                $article->views = 0;
+                $article->user_id = \Auth::user()->id;
+                $article->save();
+            }
+            return view('admin.news.show', compact('article'));
         } else {
-            $filename = $article->image;
+            echo 'error';
+            return;
         }
-
-        if (isset($article) && isset($filename)) {
-            $article->title = $request->get('title');
-            $article->category_id = $request->get('category_id');
-            $article->image = $filename;
-            $article->detail = $request->get('detail');
-            $article->summary = $request->get('summary');
-            $article->updated_at = date('Y-m-d');
-            $article->status = 1;
-            $article->views = 0;
-            $article->user_id = 0;
-            $article->save();
-        }
-
-        return view('admin.news.show', compact('article'));
     }
 
     /**
@@ -147,14 +161,19 @@ class NewsController extends HelperController
     public function destroy($id, Request $request)
     {
         $article = News::find($id);
-        $filename = $article->image;
+        if (Gate::allows('destroy', $article)) {
+            $filename = $article->image;
 
-        if (isset($filename)) {
-            \File::delete("images/bai_viet/$filename");
+            if (isset($filename)) {
+                \File::delete("images/bai_viet/$filename");
+            }
+
+            News::destroy($id);
+
+            return redirect()->route('news.index');
+        } else {
+            echo 'error';
+            return;
         }
-
-        News::destroy($id);
-
-        return redirect()->route('news.index');
     }
 }

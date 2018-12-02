@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Helpers;
+use Illuminate\Support\Facades\Gate;
 
 class Helper
 {
@@ -293,4 +294,15 @@ class Helper
         return $full;
     }
 
+    protected static function checkIndexNews($news)
+    {
+        $tmp = FALSE;
+        foreach ($new as $article) {
+            if (Gate::allows('index', $article)) {
+                $tmp = TRUE;
+            } else {
+                $tmp = FALSE;
+            }
+        }
+    }
 };

@@ -54,6 +54,11 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class,'role_id', 'parent_id');
     }
 
+    public function news()
+    {
+        return $this->hasMany(News::class);
+    }
+
     public function getPhoneNumberFormatAttribute()
     {
         $helper = new Helper($this->phone_number);
